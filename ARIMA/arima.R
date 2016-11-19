@@ -14,38 +14,42 @@ df=read.csv('nik225.csv')
 
 days = 10
 
+#original data
 ts = read.csv('ts.csv')   #0 1 2
 train_length = length(ts$Close) - days
 total_length = length(ts$Close)
 ts_train = ts$Close[1:train_length]
 ts_test = ts$Close[(train_length+1):total_length]
 
+#log data
 ts_log = read.csv('ts_log.csv')
 train_length = length(ts_log$Close) - days
 total_length = length(ts_log$Close)
 ts_log_train = ts_log$Close[1:train_length]
 ts_log_test = ts$Close[(train_length+1):total_length]
 
+#moving average data
 ts_log_moving_avg_diff = read.csv('ts_log_moving_avg_diff.csv')
 train_length = length(ts_log_moving_avg_diff$Close) - days
 total_length = length(ts_log_moving_avg_diff$Close)
 ts_log_moving_avg_diff_train = ts_log_moving_avg_diff$Close[1:train_length]
 ts_log_moving_avg_diff_test = ts_log_moving_avg_diff$Close[(train_length+1):total_length]
 
-
+#exponential moving avg data
 ts_log_ewma_diff = read.csv('ts_log_ewma_diff.csv')
 train_length = length(ts_log_ewma_diff$Close) - days
 total_length = length(ts_log_ewma_diff$Close)
 ts_log_ewma_diff_train = ts_log_ewma_diff$Close[1:train_length]
 ts_log_ewma_diff_test = ts_log_ewma_diff$Close[(train_length+1):total_length]
 
+#decomposed data
 ts_log_decompose = read.csv('ts_log_decompose.csv')
 train_length = length(ts_log_decompose$Close) - days
 total_length = length(ts_log_decompose$Close)
 ts_log_decompose_train = ts_log_decompose$Close[1:train_length]
 ts_log_decompose_test = ts_log_decompose$Close[(train_length+1):total_length]
 
-
+#adf test on each of these data
 adf_ts = adf.test(ts_train)
 adf_ts_log = adf.test(ts_log_train)
 adf_ts_log_moving_avg_diff = adf.test(ts_log_moving_avg_diff_train)
@@ -72,42 +76,39 @@ format = ".png"
 
 for (currentdata in data){ 
   TS = currentdata
-  #TS = ts$Close
-  #cat(index,"\n")
   
   final.aic <- Inf
   final.bic <- Inf
   final.order <- c(0,0,0)
   for (i in 0:3){
-    for (d in 1:3){ #dmax = 3 only 3 times differenced the data
+    for (d in 1:3){ 
       for (j in 0:4){
-        #cat(i,d,j,"\n")
+
         if(inherits(arima(TS,order=c(i,d,j)),"try-error")){
           break
         }
+
         model = arima(TS,order=c(i,d,j))
-        current.aic <- AIC(model)
-        current.bic <- BIC(model)
+        current.aic <- AIC(model)  #compute AIC error on the model formed so far
+        current.bic <- BIC(model)  #compute BIC error on the model formed so far
         
-        if(current.bic < final.bic && current.aic<final.aic){
-          #cat(i,d,j,current.aic,current.bic,"\n")
+        if(current.bic < final.bic && current.aic<final.aic){  #if current error is minimum then update all the order,model etc
+          
           final.aic <-current.aic
           final.bic <-current.bic
           final.order <- c(i,d,j)
+          final.accuracy <- accuracy(model)
           if(inherits(arima(TS,order=c(i,d,j)),"try-error")){
             break
           }
           else{
             final.arima <- arima(TS,order=c(i,d,j))
-            #final.model <- final.arima
           }
         }
       }
     }
   }
-  #cat("Loop over\n")
-  #cat(final.order,final.bic,final.aic,"\n")
-  
+  cat("Optimum Parameters are:",final.order,"  MASE Error = ",final.accuracy[1,"MASE"],"\n")
   ts_forecast = forecast(final.arima)
   ts_original = ts_forecast$x
   ts_predicted = ts_forecast$fitted

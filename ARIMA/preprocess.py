@@ -28,8 +28,6 @@ plt.title('Closing Value vs Date')
 plt.xlabel('Year')
 plt.ylabel('Closing Value')
 plt.plot(df['Date'],df['Close'])
-plt.savefig('Original.png',bbox_inches='tight')
-
 
 def test_stationarity(timeseries):
     
