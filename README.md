@@ -17,8 +17,3 @@ The model is done as follows.
 
 	i) First run Preprocessing_of_data.py with the command : python Preprocessing_of_data.py This file will generate all the technical 			parameters like RollingAvg, MovingAvg etc. in the file train.csv
 	ii) SVC.py will now take train.csv as a input and train the Support vector classifier to produce accuracy on given data.
-
-Team Members :
-Name : Anand Namdev  Roll Num : 163050068
-Name : Parth Lathiya Roll Num : 163050095
-Name : Awisha Makwana Roll Num : 163050079
